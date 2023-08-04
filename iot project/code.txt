@@ -1,0 +1,59 @@
+#include <SoftwareSerial.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClientSecure.h>
+#define alcohol A0
+
+int alcohol_analog;
+const char* ssid="oplus_co_appkuw";
+const char* pass="nvyw0461";
+const char* host="maker.ifttt.com";
+const int httpsPort = 443;
+String event_name="Over_Drink_Alcohol";
+String key="ptHg2Rf0LGQokxoAR_RS3mvh5PEP_qrZ4CKBRAfmL6a";
+int buttonState;
+WiFiClient wifiClient;
+void setup() {
+
+
+pinMode(alcohol,INPUT);
+ pinMode(D2,OUTPUT);
+ pinMode(A0,INPUT);
+ Serial.begin(115200);
+ WiFi.mode(WIFI_STA);
+ WiFi.begin(ssid,pass);
+ Serial.begin(9600);
+ while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+}
+void loop ()
+{
+HTTPClient http;  
+  buttonState=analogRead(A0);
+  WiFiClient client;
+  const int httpPort=80;
+   if (!client.connect(host, httpsPort))
+        {
+          Serial.println("connection failed");
+          return;
+        }
+
+
+
+  digitalWrite(D2,LOW);
+alcohol_analog=analogRead(alcohol);
+Serial.println(alcohol_analog);
+if(alcohol_analog>=0&&alcohol_analog<80)
+{
+  HTTPClient http;
+  http.begin(wifiClient,"http://maker.ifttt.com/trigger/"+event_name+"/with/key/"+key+"?value1="+alcohol_analog);
+  http.GET();
+  http.end();      
+  Serial.println("request sent");
+  digitalWrite(D2,HIGH);
+}
+delay(5000);
+}
